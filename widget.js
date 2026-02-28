@@ -1,5 +1,7 @@
 (function () {
   const BACKEND_URL = "https://ai-chatbot-73ut.onrender.com/chat";
+  const CLIENT_ID = document.currentScript.getAttribute("data-client") || "mikes-barbershop";
+  const BOT_NAME = document.currentScript.getAttribute("data-name") || "Assistant";
 
   // Inject styles
   const style = document.createElement("style");
@@ -72,7 +74,7 @@
       <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
     </div>
     <div id="cb-window">
-      <div id="cb-header"><span></span> Mike's Barbershop</div>
+      <div id="cb-header"><span></span> ${BOT_NAME}</div>
       <div id="cb-messages">
         <div class="cb-msg bot">Hi! 👋 How can I help you today?</div>
       </div>
@@ -113,7 +115,7 @@
       const res = await fetch(BACKEND_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text })
+        body: JSON.stringify({ message: text, client_id: CLIENT_ID })
       });
       const data = await res.json();
       document.getElementById("cb-typing").remove();
