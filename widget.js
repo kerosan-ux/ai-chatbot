@@ -1,9 +1,9 @@
 (function () {
   const BACKEND_URL = "https://ai-chatbot-73ut.onrender.com/chat";
+  const LEADS_URL = "https://ai-chatbot-73ut.onrender.com/leads";
   const CLIENT_ID = document.currentScript.getAttribute("data-client") || "mikes-barbershop";
   const BOT_NAME = document.currentScript.getAttribute("data-name") || "Assistant";
 
-  // Inject styles
   const style = document.createElement("style");
   style.innerHTML = `
     #cb-toggle {
@@ -31,6 +31,25 @@
       width: 10px; height: 10px; background: #4ade80;
       border-radius: 50%; display: inline-block;
     }
+    #cb-lead-form {
+      flex: 1; padding: 24px; display: flex; flex-direction: column;
+      justify-content: center; gap: 12px; font-family: Arial, sans-serif;
+    }
+    #cb-lead-form p {
+      margin: 0 0 8px 0; font-size: 14px; color: #475569; text-align: center;
+    }
+    #cb-lead-form input {
+      padding: 10px 14px; border: 1px solid #e2e8f0;
+      border-radius: 8px; font-size: 14px; outline: none;
+      font-family: Arial, sans-serif;
+    }
+    #cb-lead-form input:focus { border-color: #2563eb; }
+    #cb-lead-submit {
+      padding: 12px; background: #2563eb; color: white;
+      border: none; border-radius: 8px; font-size: 14px;
+      font-weight: bold; cursor: pointer; font-family: Arial, sans-serif;
+    }
+    #cb-lead-submit:hover { background: #1d4ed8; }
     #cb-messages {
       flex: 1; padding: 16px; overflow-y: auto;
       display: flex; flex-direction: column; gap: 10px;
@@ -68,17 +87,22 @@
   `;
   document.head.appendChild(style);
 
-  // Inject HTML
   document.body.innerHTML += `
     <div id="cb-toggle" onclick="cbToggle()">
       <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
     </div>
     <div id="cb-window">
       <div id="cb-header"><span></span> ${BOT_NAME}</div>
-      <div id="cb-messages">
+      <div id="cb-lead-form">
+        <p>👋 Welcome! Please introduce yourself before we chat.</p>
+        <input id="cb-name" type="text" placeholder="Your name" />
+        <input id="cb-email" type="email" placeholder="Your email" />
+        <button id="cb-lead-submit" onclick="cbSubmitLead()">Start Chat →</button>
+      </div>
+      <div id="cb-messages" style="display:none">
         <div class="cb-msg bot">Hi! 👋 How can I help you today?</div>
       </div>
-      <div id="cb-input-area">
+      <div id="cb-input-area" style="display:none">
         <input id="cb-input" type="text" placeholder="Type a message..." />
         <button id="cb-send">
           <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
@@ -87,9 +111,28 @@
     </div>
   `;
 
-  // Functions
   window.cbToggle = function () {
     document.getElementById("cb-window").classList.toggle("open");
+  };
+
+  window.cbSubmitLead = async function () {
+    const name = document.getElementById("cb-name").value.trim();
+    const email = document.getElementById("cb-email").value.trim();
+    if (!name || !email) {
+      alert("Please enter your name and email.");
+      return;
+    }
+
+    await fetch(LEADS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, client_id: CLIENT_ID })
+    });
+
+    // Hide form, show chat
+    document.getElementById("cb-lead-form").style.display = "none";
+    document.getElementById("cb-messages").style.display = "flex";
+    document.getElementById("cb-input-area").style.display = "flex";
   };
 
   document.addEventListener("click", function (e) {

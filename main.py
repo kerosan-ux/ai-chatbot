@@ -5,6 +5,8 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 import anthropic
 import os
+import json
+from datetime import datetime
 
 load_dotenv()
 
@@ -19,7 +21,6 @@ app.add_middleware(
 
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
-# Each client has a unique ID and their own config
 CLIENTS = {
     "mikes-barbershop": {
         "name": "Mike's Barbershop",
@@ -39,8 +40,16 @@ Always be energetic, friendly and helpful. If you don't know something, tell the
     }
 }
 
+# In-memory leads storage (resets on restart — we'll upgrade this later)
+leads = []
+
 class Message(BaseModel):
     message: str
+    client_id: str
+
+class Lead(BaseModel):
+    name: str
+    email: str
     client_id: str
 
 @app.post("/chat")
@@ -59,10 +68,26 @@ async def chat(data: Message):
     )
     return {"reply": response.content[0].text}
 
+@app.post("/leads")
+async def save_lead(data: Lead):
+    if not CLIENTS.get(data.client_id):
+        raise HTTPException(status_code=404, detail="Client not found")
+    
+    lead = {
+        "name": data.name,
+        "email": data.email,
+        "client_id": data.client_id,
+        "timestamp": datetime.now().isoformat()
+    }
+    leads.append(lead)
+    print(f"New lead: {lead}")
+    return {"success": True}
+
+@app.get("/leads/{client_id}")
+async def get_leads(client_id: str):
+    client_leads = [l for l in leads if l["client_id"] == client_id]
+    return client_leads
+
 @app.get("/widget.js")
 async def widget():
     return FileResponse("widget.js", media_type="application/javascript")
-
-@app.get("/clients")
-async def list_clients():
-    return [{"id": k, "name": v["name"]} for k, v in CLIENTS.items()]
