@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            min-height: 100vh;
+        }
+        #login-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        #login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+            width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        #login-box h2 { color: #1e293b; font-size: 22px; }
+        #login-box p { color: #64748b; font-size: 14px; }
+        input, select {
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            width: 100%;
+        }
+        input:focus, select:focus { border-color: #2563eb; }
+        button {
+            padding: 12px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover { background: #1d4ed8; }
+        #error { color: #ef4444; font-size: 13px; display: none; }
+
+        /* Dashboard */
+        #dashboard { display: none; padding: 32px; }
+        #dash-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        #dash-header h1 { color: #1e293b; font-size: 24px; }
+        #logout {
+            background: #ef4444;
+            width: auto;
+            padding: 8px 20px;
+        }
+        #logout:hover { background: #dc2626; }
+
+        /* Filters */
+        #filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        #filters select { width: auto; }
+        #filters input { width: auto; }
+
+        /* Stats */
+        #stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            flex: 1;
+            min-width: 140px;
+        }
+        .stat-card h3 { color: #64748b; font-size: 13px; margin-bottom: 6px; }
+        .stat-card p { color: #1e293b; font-size: 28px; font-weight: bold; }
+
+        /* Table */
+        #table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: #f8fafc;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 13px;
+            color: #64748b;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        td {
+            padding: 12px 16px;
+            font-size: 14px;
+            color: #1e293b;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #f8fafc; }
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 99px;
+            font-size: 12px;
+            font-weight: bold;
+            background: #dbeafe;
+            color: #2563eb;
+        }
+        #no-leads {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        /* Export button */
+        #export-btn {
+            background: #10b981;
+            width: auto;
+            padding: 8px 20px;
+        }
+        #export-btn:hover { background: #059669; }
+    </style>
+</head>
+<body>
+
+<!-- Login Page -->
+<div id="login-page">
+    <div id="login-box">
+        <h2>🤖 Admin Panel</h2>
+        <p>Enter your password to access the dashboard.</p>
+        <input type="password" id="password-input" placeholder="Password" onkeydown="if(event.key==='Enter') login()" />
+        <p id="error">❌ Wrong password. Try again.</p>
+        <button onclick="login()">Login</button>
+    </div>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard">
+    <div id="dash-header">
+        <h1>🤖 Chatbot Admin Panel</h1>
+        <div style="display:flex; gap:10px;">
+            <button id="export-btn" onclick="exportCSV()">Export CSV</button>
+            <button id="logout" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div id="stats">
+        <div class="stat-card">
+            <h3>TOTAL LEADS</h3>
+            <p id="stat-total">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>CLIENTS</h3>
+            <p id="stat-clients">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>TODAY</h3>
+            <p id="stat-today">0</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div id="filters">
+        <select id="filter-client" onchange="renderTable()">
+            <option value="all">All Clients</option>
+        </select>
+        <input type="text" id="filter-search" placeholder="Search name or email..." oninput="renderTable()" style="max-width:240px;" />
+    </div>
+
+    <!-- Table -->
+    <div id="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Client</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="leads-table"></tbody>
+        </table>
+        <div id="no-leads" style="display:none;">No leads found.</div>
+    </div>
+</div>
+
+<script>
+    const API = "https://ai-chatbot-73ut.onrender.com";
+    let allLeads = [];
+    let adminPassword = "";
+
+    async function login() {
+        const pwd = document.getElementById("password-input").value;
+        const res = await fetch(`${API}/leads-all?password=${encodeURIComponent(pwd)}`);
+        
+        if (res.status === 401) {
+            document.getElementById("error").style.display = "block";
+            return;
+        }
+
+        adminPassword = pwd;
+        allLeads = await res.json();
+        
+        document.getElementById("login-page").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        
+        populateFilters();
+        renderStats();
+        renderTable();
+    }
+
+    function logout() {
+        adminPassword = "";
+        allLeads = [];
+        document.getElementById("login-page").style.display = "flex";
+        document.getElementById("dashboard").style.display = "none";
+        document.getElementById("password-input").value = "";
+    }
+
+    function populateFilters() {
+        const clients = [...new Set(allLeads.map(l => l.client_id))];
+        const select = document.getElementById("filter-client");
+        clients.forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c;
+            opt.textContent = c;
+            select.appendChild(opt);
+        });
+    }
+
+    function renderStats() {
+        const today = new Date().toISOString().split("T")[0];
+        const todayLeads = allLeads.filter(l => l.created_at.startsWith(today));
+        const clients = new Set(allLeads.map(l => l.client_id));
+
+        document.getElementById("stat-total").textContent = allLeads.length;
+        document.getElementById("stat-clients").textContent = clients.size;
+        document.getElementById("stat-today").textContent = todayLeads.length;
+    }
+
+    function renderTable() {
+        const clientFilter = document.getElementById("filter-client").value;
+        const searchFilter = document.getElementById("filter-search").value.toLowerCase();
+
+        let filtered = allLeads;
+        if (clientFilter !== "all") filtered = filtered.filter(l => l.client_id === clientFilter);
+        if (searchFilter) filtered = filtered.filter(l =>
+            l.name.toLowerCase().includes(searchFilter) ||
+            l.email.toLowerCase().includes(searchFilter)
+        );
+
+        const tbody = document.getElementById("leads-table");
+        const noLeads = document.getElementById("no-leads");
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = "";
+            noLeads.style.display = "block";
+            return;
+        }
+
+        noLeads.style.display = "none";
+        tbody.innerHTML = filtered.map((l, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${l.name}</td>
+                <td>${l.email}</td>
+                <td><span class="badge">${l.client_id}</span></td>
+                <td>${new Date(l.created_at).toLocaleString()}</td>
+            </tr>
+        `).join("");
+    }
+
+    function exportCSV() {
+        const rows = [["Name", "Email", "Client", "Date"]];
+        allLeads.forEach(l => rows.push([l.name, l.email, l.client_id, l.created_at]));
+        const csv = rows.map(r => r.join(",")).join("\n");
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "leads.csv";
+        a.click();
+    }
+</script>
+
+</body>
+</html>

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import anthropic
@@ -92,10 +92,25 @@ async def save_lead(data: Lead):
 @app.get("/leads/{client_id}")
 async def get_leads(client_id: str):
     res = requests.get(
-        f"{SUPABASE_URL}/rest/v1/leads?client_id=eq.{client_id}&select=*",
+        f"{SUPABASE_URL}/rest/v1/leads?client_id=eq.{client_id}&select=*&order=created_at.desc",
         headers=HEADERS
     )
     return res.json()
+
+@app.get("/leads-all")
+async def get_all_leads(password: str):
+    if password != os.getenv("ADMIN_PASSWORD"):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    res = requests.get(
+        f"{SUPABASE_URL}/rest/v1/leads?select=*&order=created_at.desc",
+        headers=HEADERS
+    )
+    return res.json()
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin():
+    return FileResponse("admin.html")
 
 @app.get("/widget.js")
 async def widget():
