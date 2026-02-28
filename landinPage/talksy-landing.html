@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talksy — AI Chatbot for Your Business</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --white: #f5f0e8;
+            --yellow: #FFE135;
+            --orange: #FF5C00;
+            --teal: #00C2A8;
+            --pink: #FF3D8A;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--black);
+            color: var(--white);
+            font-family: 'DM Sans', sans-serif;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* Custom cursor */
+        .cursor {
+            width: 12px; height: 12px;
+            background: var(--yellow);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.15s ease;
+            mix-blend-mode: difference;
+        }
+        .cursor-follower {
+            width: 36px; height: 36px;
+            border: 2px solid var(--yellow);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            transition: all 0.08s ease;
+            mix-blend-mode: difference;
+        }
+
+        /* NAV */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            padding: 20px 48px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(10,10,10,0.95), transparent);
+        }
+        .nav-logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 28px;
+            color: var(--yellow);
+            letter-spacing: -1px;
+        }
+        .nav-logo span { color: var(--orange); }
+        .nav-links { display: flex; gap: 36px; align-items: center; }
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 300;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .nav-links a:hover { opacity: 1; }
+        .nav-cta {
+            background: var(--yellow) !important;
+            color: var(--black) !important;
+            padding: 10px 24px !important;
+            border-radius: 99px !important;
+            font-weight: 500 !important;
+            opacity: 1 !important;
+            transition: transform 0.2s, background 0.2s !important;
+        }
+        .nav-cta:hover { transform: scale(1.05) !important; background: var(--orange) !important; }
+
+        /* HERO */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 120px 48px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse 60% 50% at 80% 50%, rgba(255,92,0,0.15) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 40% at 20% 80%, rgba(0,194,168,0.1) 0%, transparent 70%),
+                radial-gradient(ellipse 30% 30% at 60% 20%, rgba(255,225,53,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,225,53,0.1);
+            border: 1px solid rgba(255,225,53,0.3);
+            padding: 8px 16px;
+            border-radius: 99px;
+            font-size: 13px;
+            color: var(--yellow);
+            margin-bottom: 32px;
+            width: fit-content;
+            animation: fadeUp 0.6s ease both;
+        }
+        .hero-tag::before {
+            content: '';
+            width: 8px; height: 8px;
+            background: var(--yellow);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.5); }
+        }
+
+        .hero h1 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(52px, 8vw, 110px);
+            line-height: 0.95;
+            letter-spacing: -3px;
+            margin-bottom: 32px;
+            animation: fadeUp 0.6s 0.1s ease both;
+        }
+
+        .hero h1 .line1 { display: block; }
+        .hero h1 .line2 {
+            display: block;
+            color: transparent;
+            -webkit-text-stroke: 2px var(--white);
+        }
+        .hero h1 .line3 {
+            display: block;
+            background: linear-gradient(90deg, var(--yellow), var(--orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-sub {
+            font-size: 18px;
+            font-weight: 300;
+            color: rgba(245,240,232,0.6);
+            max-width: 480px;
+            line-height: 1.6;
+            margin-bottom: 48px;
+            animation: fadeUp 0.6s 0.2s ease both;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            animation: fadeUp 0.6s 0.3s ease both;
+        }
+
+        .btn-primary {
+            background: var(--yellow);
+            color: var(--black);
+            padding: 16px 36px;
+            border-radius: 99px;
+            font-size: 16px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 0 40px rgba(255,225,53,0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 60px rgba(255,225,53,0.5);
+        }
+
+        .btn-secondary {
+            color: var(--white);
+            font-size: 16px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.7;
+            transition: opacity 0.2s, gap 0.2s;
+        }
+        .btn-secondary:hover { opacity: 1; gap: 12px; }
+
+        /* Floating chat demo */
+        .hero-visual {
+            position: absolute;
+            right: 48px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 340px;
+            animation: fadeUp 0.8s 0.4s ease both, float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(-50%) translateY(0px); }
+            50% { transform: translateY(-50%) translateY(-16px); }
+        }
+
+        .demo-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+        }
+        .demo-header {
+            background: var(--orange);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+        }
+        .demo-header-dot {
+            width: 10px; height: 10px;
+            background: var(--yellow);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        .demo-messages {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .demo-msg {
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.4;
+            max-width: 85%;
+        }
+        .demo-msg.bot {
+            background: rgba(255,255,255,0.08);
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+        }
+        .demo-msg.user {
+            background: var(--orange);
+            border-bottom-right-radius: 4px;
+            align-self: flex-end;
+            color: white;
+        }
+        .demo-msg.typing {
+            background: rgba(255,255,255,0.08);
+            align-self: flex-start;
+            color: rgba(255,255,255,0.4);
+            font-style: italic;
+        }
+        .demo-input {
+            margin: 0 20px 20px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 99px;
+            padding: 12px 20px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        /* Stats strip */
+        .stats-strip {
+            background: var(--yellow);
+            padding: 20px 48px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 32px;
+            overflow: hidden;
+        }
+        .stat-item {
+            text-align: center;
+            color: var(--black);
+        }
+        .stat-item strong {
+            font-family: 'Syne', sans-serif;
+            font-size: 36px;
+            font-weight: 800;
+            display: block;
+            line-height: 1;
+        }
+        .stat-item span { font-size: 13px; font-weight: 500; opacity: 0.7; }
+
+        /* HOW IT WORKS */
+        .section { padding: 120px 48px; }
+        .section-tag {
+            font-size: 12px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--orange);
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+        .section-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(36px, 5vw, 64px);
+            font-weight: 800;
+            letter-spacing: -2px;
+            line-height: 1.05;
+            margin-bottom: 64px;
+        }
+        .section-title span {
+            background: linear-gradient(90deg, var(--yellow), var(--orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+        }
+        .step {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            padding: 48px 40px;
+            position: relative;
+            transition: background 0.3s;
+        }
+        .step:hover { background: rgba(255,255,255,0.06); }
+        .step-num {
+            font-family: 'Syne', sans-serif;
+            font-size: 80px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.04);
+            position: absolute;
+            top: 20px; right: 24px;
+            line-height: 1;
+        }
+        .step-icon {
+            width: 56px; height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-bottom: 24px;
+        }
+        .step:nth-child(1) .step-icon { background: rgba(255,225,53,0.15); }
+        .step:nth-child(2) .step-icon { background: rgba(255,92,0,0.15); }
+        .step:nth-child(3) .step-icon { background: rgba(0,194,168,0.15); }
+        .step h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .step p {
+            font-size: 15px;
+            font-weight: 300;
+            color: rgba(245,240,232,0.6);
+            line-height: 1.6;
+        }
+
+        /* FEATURES */
+        .features-section {
+            padding: 120px 48px;
+            background: rgba(255,255,255,0.02);
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2px;
+        }
+        .feature-card {
+            padding: 48px;
+            border: 1px solid rgba(255,255,255,0.07);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(255,225,53,0.03));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .feature-card:hover::before { opacity: 1; }
+        .feature-card:hover { border-color: rgba(255,225,53,0.2); }
+        .feature-emoji { font-size: 40px; margin-bottom: 20px; display: block; }
+        .feature-card h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .feature-card p {
+            font-size: 15px;
+            font-weight: 300;
+            color: rgba(245,240,232,0.6);
+            line-height: 1.6;
+        }
+
+        /* PRICING */
+        .pricing-section { padding: 120px 48px; }
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .pricing-card {
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 48px 40px;
+            position: relative;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+        .pricing-card:hover { transform: translateY(-4px); }
+        .pricing-card.featured {
+            background: var(--yellow);
+            color: var(--black);
+            border-color: var(--yellow);
+        }
+        .pricing-card.featured p { color: rgba(0,0,0,0.6) !important; }
+        .pricing-card.featured .pricing-feature { color: rgba(0,0,0,0.7) !important; }
+        .pricing-label {
+            font-size: 12px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+            opacity: 0.6;
+            font-weight: 500;
+        }
+        .pricing-price {
+            font-family: 'Syne', sans-serif;
+            font-size: 56px;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        .pricing-price sup { font-size: 24px; vertical-align: top; margin-top: 12px; display: inline-block; }
+        .pricing-period {
+            font-size: 14px;
+            opacity: 0.5;
+            margin-bottom: 32px;
+        }
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .pricing-feature {
+            font-size: 14px;
+            color: rgba(245,240,232,0.7);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .pricing-feature::before {
+            content: '✓';
+            font-weight: 700;
+            color: var(--teal);
+            flex-shrink: 0;
+        }
+        .pricing-card.featured .pricing-feature::before { color: var(--orange); }
+        .pricing-btn {
+            display: block;
+            text-align: center;
+            padding: 14px;
+            border-radius: 99px;
+            font-size: 15px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .pricing-btn-outline {
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--white);
+        }
+        .pricing-btn-outline:hover { border-color: var(--yellow); color: var(--yellow); }
+        .pricing-btn-solid {
+            background: var(--black);
+            color: var(--yellow);
+        }
+        .pricing-btn-solid:hover { background: var(--orange); color: white; }
+
+        /* TESTIMONIALS */
+        .testimonials-section {
+            padding: 120px 48px;
+            background: rgba(255,255,255,0.02);
+        }
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .testimonial-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 32px;
+            transition: transform 0.3s;
+        }
+        .testimonial-card:hover { transform: translateY(-4px); }
+        .testimonial-stars { color: var(--yellow); font-size: 18px; margin-bottom: 16px; }
+        .testimonial-text {
+            font-size: 15px;
+            font-weight: 300;
+            line-height: 1.7;
+            color: rgba(245,240,232,0.8);
+            margin-bottom: 24px;
+            font-style: italic;
+        }
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .testimonial-avatar {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'Syne', sans-serif;
+        }
+        .testimonial-name { font-weight: 500; font-size: 14px; }
+        .testimonial-role { font-size: 12px; opacity: 0.5; }
+
+        /* CTA */
+        .cta-section {
+            padding: 120px 48px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-section::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(255,92,0,0.15) 0%, transparent 70%);
+        }
+        .cta-section h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(40px, 6vw, 80px);
+            font-weight: 800;
+            letter-spacing: -2px;
+            line-height: 1.05;
+            margin-bottom: 24px;
+            position: relative;
+        }
+        .cta-section p {
+            font-size: 18px;
+            font-weight: 300;
+            color: rgba(245,240,232,0.6);
+            margin-bottom: 48px;
+            position: relative;
+        }
+        .cta-actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            position: relative;
+        }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid rgba(255,255,255,0.07);
+            padding: 40px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .footer-logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 22px;
+            color: var(--yellow);
+        }
+        .footer-logo span { color: var(--orange); }
+        footer p {
+            font-size: 13px;
+            opacity: 0.4;
+        }
+
+        /* Contact form modal */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 200;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: #111;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 48px;
+            width: 100%;
+            max-width: 480px;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute; top: 20px; right: 20px;
+            background: none; border: none;
+            color: var(--white); font-size: 24px;
+            cursor: none; opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+        .modal-close:hover { opacity: 1; }
+        .modal h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .modal p { font-size: 14px; opacity: 0.6; margin-bottom: 32px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; opacity: 0.6; margin-bottom: 6px; }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--white);
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--yellow); }
+        .form-group textarea { height: 100px; resize: none; }
+        .form-submit {
+            width: 100%;
+            background: var(--yellow);
+            color: var(--black);
+            border: none;
+            padding: 14px;
+            border-radius: 99px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: none;
+            font-family: 'DM Sans', sans-serif;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+        .form-submit:hover { background: var(--orange); color: white; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Scroll reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(32px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 900px) {
+            nav { padding: 20px 24px; }
+            .nav-links { display: none; }
+            .hero { padding: 100px 24px 80px; }
+            .hero-visual { display: none; }
+            .section, .features-section, .pricing-section, .testimonials-section, .cta-section { padding: 80px 24px; }
+            .steps { grid-template-columns: 1fr; }
+            .features-grid { grid-template-columns: 1fr; }
+            .pricing-grid { grid-template-columns: 1fr; max-width: 400px; }
+            .testimonials-grid { grid-template-columns: 1fr; }
+            footer { flex-direction: column; gap: 16px; text-align: center; }
+            .stats-strip { padding: 20px 24px; flex-wrap: wrap; gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-follower" id="cursor-follower"></div>
+
+<!-- NAV -->
+<nav>
+    <div class="nav-logo">Talk<span>sy</span></div>
+    <div class="nav-links">
+        <a href="#how-it-works">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#" class="nav-cta" onclick="openModal()">Get Started</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-tag">AI-Powered Customer Support</div>
+    <h1>
+        <span class="line1">Your website</span>
+        <span class="line2">deserves a</span>
+        <span class="line3">smarter chat.</span>
+    </h1>
+    <p class="hero-sub">Talksy puts an AI assistant on your website in minutes. Capture leads, answer questions 24/7, and never miss a customer again.</p>
+    <div class="hero-actions">
+        <a href="#" class="btn-primary" onclick="openModal()">Get your chatbot →</a>
+        <a href="#how-it-works" class="btn-secondary">See how it works ↓</a>
+    </div>
+
+    <!-- Demo widget -->
+    <div class="hero-visual">
+        <div class="demo-card">
+            <div class="demo-header">
+                <div class="demo-header-dot"></div>
+                Mike's Barbershop
+            </div>
+            <div class="demo-messages" id="demo-messages">
+                <div class="demo-msg bot">Hi! 👋 How can I help you today?</div>
+            </div>
+            <div class="demo-input">Type a message...</div>
+        </div>
+    </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-strip">
+    <div class="stat-item">
+        <strong>24/7</strong>
+        <span>Always online</span>
+    </div>
+    <div class="stat-item">
+        <strong>2min</strong>
+        <span>Setup time</span>
+    </div>
+    <div class="stat-item">
+        <strong>3x</strong>
+        <span>More leads captured</span>
+    </div>
+    <div class="stat-item">
+        <strong>100%</strong>
+        <span>Customizable</span>
+    </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how-it-works">
+    <div class="section-tag">Process</div>
+    <h2 class="section-title">Up and running in <span>3 steps.</span></h2>
+    <div class="steps">
+        <div class="step reveal">
+            <div class="step-num">01</div>
+            <div class="step-icon">📋</div>
+            <h3>Tell us about your business</h3>
+            <p>Share your services, hours, location and FAQs. We train your bot to sound exactly like your brand.</p>
+        </div>
+        <div class="step reveal">
+            <div class="step-num">02</div>
+            <div class="step-icon">⚡</div>
+            <h3>We build your chatbot</h3>
+            <p>Within 24 hours your AI assistant is ready — tested, tuned, and speaking your language.</p>
+        </div>
+        <div class="step reveal">
+            <div class="step-num">03</div>
+            <div class="step-icon">🚀</div>
+            <h3>Paste one line of code</h3>
+            <p>Add a single script tag to your website and your chatbot goes live instantly. No developer needed.</p>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section" id="features">
+    <div class="section-tag">Features</div>
+    <h2 class="section-title">Everything your business <span>needs.</span></h2>
+    <div class="features-grid">
+        <div class="feature-card reveal">
+            <span class="feature-emoji">🧠</span>
+            <h3>Powered by real AI</h3>
+            <p>Built on Claude — one of the most advanced AI models in the world. Your bot understands context, handles complex questions, and never sounds robotic.</p>
+        </div>
+        <div class="feature-card reveal">
+            <span class="feature-emoji">📩</span>
+            <h3>Automatic lead capture</h3>
+            <p>Before every chat, Talksy collects the visitor's name and email. Every lead goes straight to your dashboard — ready to follow up.</p>
+        </div>
+        <div class="feature-card reveal">
+            <span class="feature-emoji">📊</span>
+            <h3>Live admin dashboard</h3>
+            <p>See all your leads in one place. Filter by date, search by name, and export to CSV with one click. No technical knowledge required.</p>
+        </div>
+        <div class="feature-card reveal">
+            <span class="feature-emoji">🎨</span>
+            <h3>Fully customizable</h3>
+            <p>Your bot, your brand. Custom name, personality, colors, and responses. Each chatbot is unique to your business — not a generic template.</p>
+        </div>
+    </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+    <div class="section-tag" style="text-align:center;">Pricing</div>
+    <h2 class="section-title" style="text-align:center;">Simple, honest <span>pricing.</span></h2>
+    <div class="pricing-grid">
+        <div class="pricing-card reveal">
+            <div class="pricing-label">Starter</div>
+            <div class="pricing-price"><sup>$</sup>199</div>
+            <div class="pricing-period">setup + $49/month</div>
+            <ul class="pricing-features">
+                <li class="pricing-feature">1 AI chatbot</li>
+                <li class="pricing-feature">Lead capture (name & email)</li>
+                <li class="pricing-feature">Admin dashboard</li>
+                <li class="pricing-feature">Custom business info & FAQ</li>
+                <li class="pricing-feature">1-line website embed</li>
+            </ul>
+            <a href="#" class="pricing-btn pricing-btn-outline" onclick="openModal()">Get started</a>
+        </div>
+        <div class="pricing-card featured reveal">
+            <div class="pricing-label">Pro</div>
+            <div class="pricing-price"><sup>$</sup>399</div>
+            <div class="pricing-period">setup + $99/month</div>
+            <ul class="pricing-features">
+                <li class="pricing-feature">Everything in Starter</li>
+                <li class="pricing-feature">Custom personality & tone</li>
+                <li class="pricing-feature">CRM integration</li>
+                <li class="pricing-feature">Chat history & analytics</li>
+                <li class="pricing-feature">Priority support</li>
+            </ul>
+            <a href="#" class="pricing-btn pricing-btn-solid" onclick="openModal()">Get started</a>
+        </div>
+    </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials-section">
+    <div class="section-tag">Testimonials</div>
+    <h2 class="section-title">Businesses <span>love Talksy.</span></h2>
+    <div class="testimonials-grid">
+        <div class="testimonial-card reveal">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"We went from missing customer questions on weekends to having every inquiry answered instantly. Our bookings went up 40% in the first month."</p>
+            <div class="testimonial-author">
+                <div class="testimonial-avatar" style="background:rgba(255,225,53,0.2);color:var(--yellow);">M</div>
+                <div>
+                    <div class="testimonial-name">Mike Ionescu</div>
+                    <div class="testimonial-role">Owner, Mike's Barbershop</div>
+                </div>
+            </div>
+        </div>
+        <div class="testimonial-card reveal">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Setup took literally 10 minutes. The bot answers membership questions, pricing, everything. It's like having a receptionist that never sleeps."</p>
+            <div class="testimonial-author">
+                <div class="testimonial-avatar" style="background:rgba(0,194,168,0.2);color:var(--teal);">A</div>
+                <div>
+                    <div class="testimonial-name">Ana Popescu</div>
+                    <div class="testimonial-role">Manager, Fitness Zone Gym</div>
+                </div>
+            </div>
+        </div>
+        <div class="testimonial-card reveal">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"The lead capture alone is worth it. We collect 15-20 emails a week from people who would have just left the website before. Incredible ROI."</p>
+            <div class="testimonial-author">
+                <div class="testimonial-avatar" style="background:rgba(255,92,0,0.2);color:var(--orange);">R</div>
+                <div>
+                    <div class="testimonial-name">Radu Constantin</div>
+                    <div class="testimonial-role">Owner, Beauty Studio Cluj</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+    <h2>Ready to get more <span style="background:linear-gradient(90deg,var(--yellow),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">customers?</span></h2>
+    <p>Join businesses already using Talksy to capture leads and support customers 24/7.</p>
+    <div class="cta-actions">
+        <a href="#" class="btn-primary" onclick="openModal()">Get your chatbot today →</a>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-logo">Talk<span>sy</span></div>
+    <p>© 2026 Talksy. All rights reserved.</p>
+    <p>Made with ❤️ in Bucharest</p>
+</footer>
+
+<!-- CONTACT MODAL -->
+<div class="modal-overlay" id="modal">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <h3>Let's get started 🚀</h3>
+        <p>Fill in your details and we'll set up your chatbot within 24 hours.</p>
+        <div class="form-group">
+            <label>Your name</label>
+            <input type="text" placeholder="John Doe" />
+        </div>
+        <div class="form-group">
+            <label>Email address</label>
+            <input type="email" placeholder="john@business.com" />
+        </div>
+        <div class="form-group">
+            <label>Business name & website</label>
+            <input type="text" placeholder="Mike's Barbershop — mikebarbershop.ro" />
+        </div>
+        <div class="form-group">
+            <label>Tell us about your business</label>
+            <textarea placeholder="What do you do? What questions do customers usually ask?"></textarea>
+        </div>
+        <button class="form-submit" onclick="submitForm()">Send request →</button>
+    </div>
+</div>
+
+<script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const follower = document.getElementById('cursor-follower');
+    let mx = 0, my = 0, fx = 0, fy = 0;
+
+    document.addEventListener('mousemove', e => {
+        mx = e.clientX; my = e.clientY;
+        cursor.style.left = mx - 6 + 'px';
+        cursor.style.top = my - 6 + 'px';
+    });
+
+    function animateFollower() {
+        fx += (mx - fx - 18) * 0.12;
+        fy += (my - fy - 18) * 0.12;
+        follower.style.left = fx + 'px';
+        follower.style.top = fy + 'px';
+        requestAnimationFrame(animateFollower);
+    }
+    animateFollower();
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, i) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => entry.target.classList.add('visible'), i * 100);
+            }
+        });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => observer.observe(el));
+
+    // Modal
+    function openModal() {
+        document.getElementById('modal').classList.add('open');
+        return false;
+    }
+    function closeModal() {
+        document.getElementById('modal').classList.remove('open');
+    }
+    function submitForm() {
+        alert('Thank you! We will contact you within 24 hours. 🚀');
+        closeModal();
+    }
+    document.getElementById('modal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    // Demo chat animation
+    const demoMessages = [
+        { type: 'user', text: 'What are your opening hours?' },
+        { type: 'bot', text: 'We\'re open Mon-Sat 9am-7pm. Sundays we\'re closed. Want to book an appointment? 📅' },
+        { type: 'user', text: 'How much is a haircut?' },
+        { type: 'bot', text: 'A haircut is $20, beard trim $15, or get both for $30! 💈' },
+    ];
+
+    let msgIndex = 0;
+    function addDemoMessage() {
+        if (msgIndex >= demoMessages.length) { msgIndex = 0; document.getElementById('demo-messages').innerHTML = '<div class="demo-msg bot">Hi! 👋 How can I help you today?</div>'; }
+        const msg = demoMessages[msgIndex];
+        const container = document.getElementById('demo-messages');
+        const el = document.createElement('div');
+        el.className = `demo-msg ${msg.type}`;
+        el.textContent = msg.text;
+        container.appendChild(el);
+        container.scrollTop = container.scrollHeight;
+        msgIndex++;
+    }
+    setInterval(addDemoMessage, 2500);
+</script>
+
+</body>
+</html>

@@ -57,6 +57,10 @@ class Lead(BaseModel):
     email: str
     client_id: str
 
+@app.get("/")
+async def landing():
+    return FileResponse("landing.html")
+
 @app.post("/chat")
 async def chat(data: Message):
     client_config = CLIENTS.get(data.client_id)
