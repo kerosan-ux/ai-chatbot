@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import anthropic
@@ -9,7 +10,6 @@ load_dotenv()
 
 app = FastAPI()
 
-# Allow the widget to talk to this backend from any website
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,7 +19,6 @@ app.add_middleware(
 
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
-# This is the business info — you'll customize this per client
 SYSTEM_PROMPT = """
 You are a helpful assistant for Mike's Barbershop.
 Business hours: Mon-Sat 9am-7pm, Sunday closed.
@@ -42,3 +41,7 @@ async def chat(data: Message):
         ]
     )
     return {"reply": response.content[0].text}
+
+@app.get("/widget.js")
+async def widget():
+    return FileResponse("widget.js", media_type="application/javascript")
