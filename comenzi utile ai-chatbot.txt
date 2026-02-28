@@ -1,0 +1,6 @@
+comenzi utile
+
+pip freeze > requirements.txt  --->  How to test it
+Make sure your backend is still running (uvicorn main:app --reload), then just open widget.html in your browser by double-clicking it.
+
+venv\Scripts\activate afte sau start.bat ---> la fiecare restart de consola
