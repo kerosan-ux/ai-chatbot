@@ -4,9 +4,8 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import anthropic
+import requests
 import os
-import json
-from datetime import datetime
 
 load_dotenv()
 
@@ -19,7 +18,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+ai_client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+HEADERS = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": f"Bearer {SUPABASE_KEY}",
+    "Content-Type": "application/json"
+}
 
 CLIENTS = {
     "mikes-barbershop": {
@@ -40,9 +48,6 @@ Always be energetic, friendly and helpful. If you don't know something, tell the
     }
 }
 
-# In-memory leads storage (resets on restart — we'll upgrade this later)
-leads = []
-
 class Message(BaseModel):
     message: str
     client_id: str
@@ -58,7 +63,7 @@ async def chat(data: Message):
     if not client_config:
         raise HTTPException(status_code=404, detail="Client not found")
 
-    response = client.messages.create(
+    response = ai_client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=512,
         system=client_config["prompt"],
@@ -72,21 +77,25 @@ async def chat(data: Message):
 async def save_lead(data: Lead):
     if not CLIENTS.get(data.client_id):
         raise HTTPException(status_code=404, detail="Client not found")
-    
-    lead = {
-        "name": data.name,
-        "email": data.email,
-        "client_id": data.client_id,
-        "timestamp": datetime.now().isoformat()
-    }
-    leads.append(lead)
-    print(f"New lead: {lead}")
+
+    requests.post(
+        f"{SUPABASE_URL}/rest/v1/leads",
+        json={
+            "name": data.name,
+            "email": data.email,
+            "client_id": data.client_id
+        },
+        headers=HEADERS
+    )
     return {"success": True}
 
 @app.get("/leads/{client_id}")
 async def get_leads(client_id: str):
-    client_leads = [l for l in leads if l["client_id"] == client_id]
-    return client_leads
+    res = requests.get(
+        f"{SUPABASE_URL}/rest/v1/leads?client_id=eq.{client_id}&select=*",
+        headers=HEADERS
+    )
+    return res.json()
 
 @app.get("/widget.js")
 async def widget():
